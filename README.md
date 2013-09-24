@@ -1,4 +1,4 @@
-inApp
+in app verification module (erlang implementation)
 =====
 
 Small toolbox for verify in app purchases.
