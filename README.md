@@ -1,8 +1,14 @@
+
 in app verification module (erlang implementation)
 =====
 
-Small toolbox for verify in app purchases.
+Small and lightweight http server based on Mochoweb for iOS in app verification.
 
-Module have 1 method - verify_iap with 1 parameter (Receipt data).
+Send POST request on production or sandbox path with receipt data in request body.
 
-You can change itunes_url function for rerouting requests between sandbox and production servers.
+Note: Request body must contain receipt data "as is" without any changes
+==
+
+Response - something like this:
+
+{"status": {"code": "0", "status": "This receipt is real."}}
