@@ -1,5 +1,5 @@
 -module (iap_manager).
--export ([verify_iap/1]).
+-export ([verify_iap/2]).
 
 code_field()->
 	<<"code">>.
@@ -12,24 +12,30 @@ status_field()->
 
 % "https://sandbox.itunes.apple.com/verifyReceipt" - sandbox url 
 % "https://buy.itunes.apple.com/verifyReceipt" - real url
-itunes_url()->
-	"https://sandbox.itunes.apple.com/verifyReceipt".
 
-verify_iap(Data)->
+get_url(Dest)->
+	case Dest of
+			production ->
+				"https://buy.itunes.apple.com/verifyReceipt";
+			sandbox ->
+				"https://sandbox.itunes.apple.com/verifyReceipt"
+	end.
+
+verify_iap(Data, Dest)->
 	%extract Receipt data
 	DataList = binary_to_list(Data),
-	ReceiptData = lists:sublist(DataList,13, length(DataList)),
+	ReceiptData = lists:sublist(DataList, 13, length(DataList)),
+	DecodedReceiptData = "{\"receipt-data\" : \"" ++ ReceiptData ++ "\"}",
 	inets:start(temporary),
 	ssl:start(temporary),
-	DecodedReceiptData = "{\"receipt-data\" : \"" ++ ReceiptData ++ "\"}",
-	{ok, {{Version, ResponseCode, ReasonPhrase}, Headers, Body}} = httpc:request(post, {itunes_url(), [], "application/json; charset=utf8", DecodedReceiptData}, [], []),
+	{ok, {{Version, ResponseCode, ReasonPhrase}, Headers, Body}} = httpc:request(post, {get_url(Dest), [], "application/json; charset=utf8", DecodedReceiptData}, [], []),
 	{struct, JsonPropList} = mochijson2:decode(Body),
 	Status = proplists:get_value(<<"status">>, JsonPropList),
 	define_status(Status).
 
 make_response(Code, Message)->
-	[{status_field() , [{code_field(), Code}, {message_field(), Message}]],
-	log_error(Code, Message).
+	log_error(Code, Message),
+	[{status_field() , [{code_field(), Code}, {message_field(), Message}]}].
 
 log_error(Code, Message)->
 	io:format("~n Error (~p): ~p~n", [binary_to_list(Code), binary_to_list(Message)]).
@@ -75,5 +81,5 @@ define_status(Status)->
 		_ ->
 			Message = <<"Unrecognized error.">>,
 			Code = <<"-1">>,
-			make_response(Code, Message);
+			make_response(Code, Message)
 	end.

@@ -1,0 +1,9 @@
+%% -*- erlang -*-
+{application, iap_verify,
+ [{description, "iap_verify"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, []},
+  {mod, {'iap_verify_app', []}},
+  {env, []},
+  {applications, [kernel, stdlib, crypto]}]}.
