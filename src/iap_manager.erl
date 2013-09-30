@@ -24,7 +24,7 @@ get_url(Dest)->
 verify_iap(Data, Dest)->
 	%extract Receipt data
 	DataList = binary_to_list(Data),
-	ReceiptData = lists:sublist(DataList, 13, length(DataList)),
+	ReceiptData = DataList -- "receiptdata=",
 	DecodedReceiptData = "{\"receipt-data\" : \"" ++ ReceiptData ++ "\"}",
 	inets:start(temporary),
 	ssl:start(temporary),
